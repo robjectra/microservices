@@ -1,4 +1,4 @@
-package com.microservices.address.constants;
+package com.microservices.address.model.enums;
 
 public enum AddressType {
     TEMPORARY,

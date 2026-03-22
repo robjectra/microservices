@@ -1,6 +1,6 @@
 package com.microservices.address.model.entity;
 
-import com.microservices.address.constants.AddressType;
+import com.microservices.address.model.enums.AddressType;
 import jakarta.persistence.*;
 import lombok.Data;
 

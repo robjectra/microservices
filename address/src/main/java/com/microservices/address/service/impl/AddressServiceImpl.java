@@ -1,5 +1,6 @@
 package com.microservices.address.service.impl;
 
+import com.microservices.address.exception.ResourceNotFoundException;
 import com.microservices.address.model.dto.AddressDto;
 import com.microservices.address.model.entity.Address;
 import com.microservices.address.repository.AddressRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
 @Service
 @AllArgsConstructor
 public class AddressServiceImpl implements AddressService {
@@ -19,47 +21,43 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public AddressDto getAddress(Long id) {
-        Address address = addressRepository.findById(id).orElseThrow(RuntimeException::new);
+        Address address = addressRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
         return modelMapper.map(address, AddressDto.class);
     }
 
     @Override
-    public List<AddressDto> getEmployeeAddress(Long id) {
-        List<Address> addressList = addressRepository.findAll();
-        if(addressList.isEmpty()){
-            throw new RuntimeException("address not found");
-        }
-        return addressList.parallelStream()
-                .map(address -> modelMapper.map(address, AddressDto.class)).toList();
+    public List<AddressDto> getEmployeeAddressById(Long id) {
+        List<Address> addresses = addressRepository.findByEmpId(id);
+        return addresses.stream()
+                .map(adder -> modelMapper.map(adder, AddressDto.class))
+                .toList();
     }
 
     @Override
-    public List<AddressDto> saveAddress(List<AddressDto> addressDtoList) {
-        // TO DO - check if employee exist or not
-        List<Address> addressList = addressDtoList.stream()
-                .map(addressDto -> modelMapper.map(addressDto, Address.class))
+    public List<AddressDto> saveAddress(List<AddressDto> addressDtos) {
+        List<Address> addresses = addressDtos.stream()
+                .map(dto -> modelMapper.map(dto, Address.class))
                 .toList();
 
-        addressList = addressRepository.saveAll(addressList);
-
-        return addressList.stream()
-                .map(address -> modelMapper.map(address, AddressDto.class)).toList();
+        return addressRepository.saveAll(addresses).stream()
+                .map(addr -> modelMapper.map(addr, AddressDto.class))
+                .toList();
     }
 
     @Override
     public AddressDto updateAddress(Long id, AddressDto addressDto) {
-        // TO DO - check if employee exist or not
-        Address address = addressRepository.findById(id).orElseThrow(RuntimeException::new);
+        Address address = addressRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+
         modelMapper.map(addressDto, address);
-
-        address = addressRepository.save(address);
-
-        return modelMapper.map(address, AddressDto.class);
+        return modelMapper.map(addressRepository.save(address), AddressDto.class);
     }
 
     @Override
     public Void deleteAddress(Long id) {
-        Address address = addressRepository.findById(id).orElseThrow(RuntimeException::new);
+        addressRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
         addressRepository.deleteById(id);
         return null;
     }

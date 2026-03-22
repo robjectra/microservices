@@ -10,7 +10,7 @@ public interface AddressService {
 
     AddressDto getAddress(Long id);
 
-    List<AddressDto> getEmployeeAddress(Long id);
+    List<AddressDto> getEmployeeAddressById(Long id);
 
     List<AddressDto> saveAddress(List<AddressDto> addressDtoList);
 

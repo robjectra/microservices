@@ -1,6 +1,6 @@
-package com.microservices.address.model.dto;
+package com.microservices.employee.model.dto;
 
-import com.microservices.address.model.enums.AddressType;
+import com.microservices.employee.model.enums.AddressType;
 import lombok.Data;
 
 @Data

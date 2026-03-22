@@ -1,12 +1,15 @@
 package com.microservices.employee.service.Impl;
 
+import com.microservices.employee.client.AddressClient;
 import com.microservices.employee.exception.ResourceAlreadyExistException;
 import com.microservices.employee.exception.ResourceNotFoundException;
+import com.microservices.employee.model.dto.AddressDto;
 import com.microservices.employee.model.dto.EmployeeDto;
 import com.microservices.employee.model.entity.Employee;
 import com.microservices.employee.repository.EmployeeRepository;
 import com.microservices.employee.service.EmployeeService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -15,15 +18,20 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final ModelMapper modelMapper;
+    private  final AddressClient addressClient;
 
     @Override
     public EmployeeDto getEmployee(Long id) {
         Employee employee = employeeRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
-        return modelMapper.map(employee, EmployeeDto.class);
+        List<AddressDto> addressDtoList = addressClient.getAddressesByEmployeeId(employee.getId());
+        EmployeeDto employeeDto = modelMapper.map(employee, EmployeeDto.class);
+        employeeDto.setAddresses(addressDtoList);
+        return employeeDto;
     }
 
     @Override
@@ -33,7 +41,12 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new ResourceNotFoundException("no user found");
         }
         return employeeList.parallelStream()
-                .map(employee -> modelMapper.map(employee, EmployeeDto.class))
+                .map(employee -> {
+                    EmployeeDto employeeDto = modelMapper.map(employee, EmployeeDto.class);
+                    List<AddressDto> addressDtoList = addressClient.getAddressesByEmployeeId(employeeDto.getId());
+                    employeeDto.setAddresses(addressDtoList);
+                    return employeeDto;
+                })
                 .toList();
     }
 
